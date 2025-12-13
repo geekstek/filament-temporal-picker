@@ -1,0 +1,69 @@
+{
+    "name": "geekstek/filament-temporal-picker",
+    "description": "A Filament 4 plugin providing flexible temporal selection components including year, month, week, weekday, and day-of-month pickers with multi-select and range support.",
+    "keywords": [
+        "filament",
+        "laravel",
+        "datepicker",
+        "date-picker",
+        "temporal",
+        "year-picker",
+        "month-picker",
+        "week-picker"
+    ],
+    "homepage": "https://github.com/geekstek/filament-temporal-picker",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Willie Ong",
+            "email": "willie@example.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "filament/filament": "^4.0",
+        "illuminate/contracts": "^11.0|^12.0",
+        "spatie/laravel-package-tools": "^1.16"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.14",
+        "nunomaduro/collision": "^8.1",
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-livewire": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Geekstek\\TemporalPicker\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Geekstek\\TemporalPicker\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "@composer run prepare",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Geekstek\\TemporalPicker\\TemporalPickerServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
