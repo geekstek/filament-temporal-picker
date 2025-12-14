@@ -7,14 +7,13 @@ A Filament 4 plugin providing flexible temporal selection components including y
 
 ## Features
 
-- 🗓️ **6 Picker Types**: Year, Month, MonthRange, Week, Weekday, Day of Month
+- 🗓️ **5 Picker Types**: Year, Month, Week, Weekday, Day of Month
 - 🔄 **Multi-Select Support**: Select multiple values with min/max constraints
-- 📅 **Range Selection**: MonthRangePicker for selecting date ranges with separate start/end fields
 - 🚫 **Disabled Options**: Block specific options from selection
 - 🌐 **Localization**: Full i18n support (English & Chinese included)
 - 🎨 **Tailwind CSS 4**: Native dark mode support
 - ⚡ **Livewire & Alpine.js**: Reactive and performant
-- 💾 **Flexible Storage**: Single values, JSON arrays, or separate fields for ranges
+- 💾 **Flexible Storage**: Single values or JSON arrays for multiple selections
 
 ## Requirements
 
@@ -105,21 +104,41 @@ MonthPicker::make('available_months')
     ->maxSelections(6);
 ```
 
-### MonthRangePicker
+#### Month Range Selection Pattern
 
-Select a range of months using two separate fields (start and end).
+To create a month range selector, use two `MonthPicker` fields with reactive validation:
 
 ```php
-use Geekstek\TemporalPicker\Forms\Components\MonthRangePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Get;
+use Geekstek\TemporalPicker\Forms\Components\MonthPicker;
 
-MonthRangePicker::make('campaign_period')
-    ->label('Campaign Period')
-    ->fields('campaign_start', 'campaign_end')  // Define field names
-    ->labels('Start Month', 'End Month')        // Custom labels (optional)
-    ->minDate('2024-01')
-    ->maxDate('2025-12')
-    ->format('Y-m')
-    ->required();
+Grid::make(2)
+    ->schema([
+        MonthPicker::make('campaign_start')
+            ->label('Start Month')
+            ->minDate('2024-01')
+            ->maxDate(fn (Get $get) => $get('campaign_end') ?? '2025-12')
+            ->live()
+            ->afterStateUpdated(function ($state, $set, Get $get) {
+                $endValue = $get('campaign_end');
+                if ($state && $endValue && $state > $endValue) {
+                    $set('campaign_end', null);
+                }
+            }),
+            
+        MonthPicker::make('campaign_end')
+            ->label('End Month')
+            ->minDate(fn (Get $get) => $get('campaign_start') ?? '2024-01')
+            ->maxDate('2025-12')
+            ->live()
+            ->afterStateUpdated(function ($state, $set, Get $get) {
+                $startValue = $get('campaign_start');
+                if ($state && $startValue && $state < $startValue) {
+                    $set('campaign_start', null);
+                }
+            }),
+    ]);
 ```
 
 ### WeekPicker
@@ -166,14 +185,13 @@ DayOfMonthPicker::make('payment_days')
 
 ## Data Storage Formats
 
-| Picker | Single Select | Multiple Select | Range Selection |
-|--------|---------------|-----------------|-----------------|
-| YearPicker | `2024` (int) | `[2023, 2024, 2025]` (JSON array) | - |
-| MonthPicker | `"2024-03"` (string) | `["2024-01", "2024-03"]` (JSON array) | - |
-| MonthRangePicker | - | - | Two fields: `start="2024-01"`, `end="2024-06"` |
-| WeekPicker | `"2024-W15"` (string) | `["2024-W10", "2024-W15"]` (JSON array) | - |
-| WeekdayPicker | `"monday"` or `1` | `["monday", "wednesday"]` or `[1, 3]` (JSON array) | - |
-| DayOfMonthPicker | `15` (int) | `[1, 15, 28]` (JSON array) | - |
+| Picker | Single Select | Multiple Select |
+|--------|---------------|-----------------|
+| YearPicker | `2024` (int) | `[2023, 2024, 2025]` (JSON array) |
+| MonthPicker | `"2024-03"` (string) | `["2024-01", "2024-03"]` (JSON array) |
+| WeekPicker | `"2024-W15"` (string) | `["2024-W10", "2024-W15"]` (JSON array) |
+| WeekdayPicker | `"monday"` or `1` | `["monday", "wednesday"]` or `[1, 3]` (JSON array) |
+| DayOfMonthPicker | `15` (int) | `[1, 15, 28]` (JSON array) |
 
 ### Database Schema Recommendations
 
@@ -190,9 +208,10 @@ Schema::create('schedules', function (Blueprint $table) {
     // Multiple selection - use JSON column
     $table->json('available_months')->nullable();
     
-    // Range selection - use two separate columns
+    // Range selection pattern - use two separate columns
     $table->string('campaign_start', 7)->nullable();
     $table->string('campaign_end', 7)->nullable();
+    $table->index(['campaign_start', 'campaign_end']);  // Recommended for queries
     
     $table->timestamps();
 });
@@ -237,10 +256,11 @@ Here's a complete example showing all pickers in a Filament Resource:
 
 ```php
 use Filament\Forms;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Get;
 use Geekstek\TemporalPicker\Forms\Components\{
     YearPicker,
     MonthPicker,
-    MonthRangePicker,
     WeekPicker,
     WeekdayPicker,
     DayOfMonthPicker
@@ -273,12 +293,19 @@ public static function form(Form $form): Form
                     ->multiple()
                     ->default(['2024-01', '2024-06', '2024-12']),
                 
-                // Month range (two separate fields)
-                MonthRangePicker::make('campaign_period')
-                    ->label('Campaign Period')
-                    ->fields('campaign_start', 'campaign_end')
-                    ->minDate('2024-01')
-                    ->maxDate('2025-12'),
+                // Month range pattern (two separate fields)
+                Grid::make(2)
+                    ->schema([
+                        MonthPicker::make('campaign_start')
+                            ->label('Campaign Start')
+                            ->live()
+                            ->maxDate(fn (Get $get) => $get('campaign_end')),
+                        
+                        MonthPicker::make('campaign_end')
+                            ->label('Campaign End')
+                            ->live()
+                            ->minDate(fn (Get $get) => $get('campaign_start')),
+                    ]),
                 
                 // Week picker
                 WeekPicker::make('report_week')

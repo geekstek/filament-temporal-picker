@@ -39,6 +39,7 @@ class MonthPicker extends TemporalField
                         $date = \Carbon\Carbon::createFromFormat($component->getFormat(), $item);
                         if (! $date || $date->format($component->getFormat()) !== $item) {
                             $fail("Each item must be in {$component->getFormat()} format.");
+
                             return;
                         }
                     }
