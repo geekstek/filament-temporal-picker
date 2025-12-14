@@ -106,11 +106,11 @@ MonthPicker::make('available_months')
 
 #### Month Range Selection Pattern
 
-To create a month range selector, use two `MonthPicker` fields with reactive validation:
+To create a month range selector with dynamic constraints, use two `MonthPicker` fields with `->live()`:
 
 ```php
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Utilities\Get
+use Filament\Schemas\Components\Utilities\Get;
 use Geekstek\TemporalPicker\Forms\Components\MonthPicker;
 
 Grid::make(2)
@@ -140,6 +140,11 @@ Grid::make(2)
             }),
     ]);
 ```
+
+The component will automatically:
+- Update `minDate` and `maxDate` constraints when related fields change
+- Prevent selecting invalid date ranges
+- Clear conflicting values automatically
 
 ### WeekPicker
 

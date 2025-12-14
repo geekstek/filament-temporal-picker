@@ -381,6 +381,19 @@ function temporalPicker(config) {
             // Update Livewire state
             this.$wire.set(this.statePath, this.state);
         },
+
+        clearSelection() {
+            if (this.disabled || this.readOnly) return;
+            
+            if (this.multiple) {
+                this.state = [];
+            } else {
+                this.state = null;
+            }
+            
+            this.syncState();
+            this.open = false;
+        },
     };
 }
 

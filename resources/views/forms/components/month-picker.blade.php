@@ -7,6 +7,8 @@ $disabledOptions = $getDisabledOptions();
 $statePath = $getStatePath();
 $state = $getState();
 $yearRange = $getYearRange();
+$minDate = $getMinDate();
+$maxDate = $getMaxDate();
 @endphp
 
 <x-dynamic-component
@@ -23,15 +25,15 @@ $yearRange = $getYearRange();
             readOnly: @js($isReadOnly),
             disabledOptions: @js($disabledOptions),
             options: @js($options),
-            minDate: @js($getMinDate()),
-            maxDate: @js($getMaxDate()),
+            minDate: @js($minDate),
+            maxDate: @js($maxDate),
             yearRange: @js($yearRange),
             format: @js($getFormat()),
             displayFormat: @js($getDisplayFormat()),
             locale: @js($getLocale()),
         })"
+        wire:key="month-picker-{{ $statePath }}-{{ $minDate }}-{{ $maxDate }}"
         x-on:change="syncState()"
-        wire:ignore
         {{ $attributes->merge($getExtraAttributes())->class([
             'fi-fo-temporal-picker fi-fo-month-picker',
         ]) }}>
@@ -43,9 +45,22 @@ $yearRange = $getYearRange();
                 :disabled="@js($isDisabled)"
                 class="fi-input w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
                 <span x-text="getDisplayValue() || '{{ __('temporal-picker::temporal-picker.placeholders.month') }}'"></span>
-                <x-filament::icon
-                    icon="heroicon-m-calendar"
-                    class="h-5 w-5 text-gray-400" />
+                <div class="flex items-center gap-1">
+                    {{-- Clear button --}}
+                    <button
+                        type="button"
+                        x-show="state && !@js($isDisabled) && !@js($isReadOnly)"
+                        x-on:click.stop="clearSelection()"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                        <x-filament::icon
+                            icon="heroicon-m-x-mark"
+                            class="h-4 w-4" />
+                    </button>
+                    {{-- Calendar icon --}}
+                    <x-filament::icon
+                        icon="heroicon-m-calendar"
+                        class="h-5 w-5 text-gray-400" />
+                </div>
             </button>
 
             <div
