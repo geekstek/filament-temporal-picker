@@ -385,13 +385,14 @@ function temporalPicker(config) {
         clearSelection() {
             if (this.disabled || this.readOnly) return;
             
-            if (this.multiple) {
-                this.state = [];
-            } else {
-                this.state = null;
+            const newValue = this.multiple ? [] : null;
+            this.state = newValue;
+            
+            // Force Livewire update
+            if (this.$wire) {
+                this.$wire.set(this.statePath, newValue, false);
             }
             
-            this.syncState();
             this.open = false;
         },
     };
