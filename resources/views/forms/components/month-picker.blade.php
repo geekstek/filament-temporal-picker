@@ -34,6 +34,11 @@ $maxDate = $getMaxDate();
         })"
         wire:key="month-picker-{{ $statePath }}-{{ $minDate }}-{{ $maxDate }}"
         x-on:change="syncState()"
+        x-effect="
+            // Update constraints dynamically when minDate or maxDate changes from Livewire
+            minDate = @js($minDate);
+            maxDate = @js($maxDate);
+        "
         {{ $attributes->merge($getExtraAttributes())->class([
             'fi-fo-temporal-picker fi-fo-month-picker',
         ]) }}>
