@@ -20,9 +20,31 @@ class MonthPicker extends TemporalField
     {
         parent::setUp();
 
+        // Single selection: validate date format
         $this->rule(
             static fn (self $component) => "date_format:{$component->getFormat()}",
-            static fn (self $component): bool => ! $component->isMultiple() && ! $component->isRangeSelection()
+            static fn (self $component): bool => ! $component->isMultiple()
+        );
+
+        // Multiple selection: validate array with date_format for each element
+        $this->rule(
+            static fn (self $component) => [
+                'array',
+                function ($attribute, $value, $fail) use ($component) {
+                    if (! is_array($value)) {
+                        return;
+                    }
+
+                    foreach ($value as $item) {
+                        $date = \Carbon\Carbon::createFromFormat($component->getFormat(), $item);
+                        if (! $date || $date->format($component->getFormat()) !== $item) {
+                            $fail("Each item must be in {$component->getFormat()} format.");
+                            return;
+                        }
+                    }
+                },
+            ],
+            static fn (self $component): bool => $component->isMultiple()
         );
     }
 

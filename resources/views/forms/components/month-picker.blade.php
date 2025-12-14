@@ -2,7 +2,6 @@
 $isMultiple = $isMultiple();
 $isDisabled = $isDisabled();
 $isReadOnly = $field->isReadOnly();
-$isRangeSelection = $isRangeSelection();
 $options = $getOptions();
 $disabledOptions = $getDisabledOptions();
 $statePath = $getStatePath();
@@ -19,7 +18,7 @@ $yearRange = $getYearRange();
             state: @js($state),
             statePath: @js($statePath),
             multiple: @js($isMultiple),
-            rangeSelection: @js($isRangeSelection),
+            rangeSelection: false,
             disabled: @js($isDisabled),
             readOnly: @js($isReadOnly),
             disabledOptions: @js($disabledOptions),
@@ -84,7 +83,6 @@ $yearRange = $getYearRange();
                             x-on:mouseleave="handleMouseLeave()"
                             :class="{
                                 'fi-temporal-option-selected': isMonthSelected(option.value),
-                                'fi-temporal-option-in-range': isInRange(option.value),
                                 'fi-temporal-option-disabled': isMonthDisabled(option.value)
                             }"
                             :disabled="isMonthDisabled(option.value)"
@@ -92,20 +90,6 @@ $yearRange = $getYearRange();
                             x-text="option.label"></button>
                     </template>
                 </div>
-
-                {{-- Range display --}}
-                @if($isRangeSelection)
-                <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">{{ __('temporal-picker::temporal-picker.range.start') }}:</span>
-                        <span x-text="rangeStart || '-'"></span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm mt-1">
-                        <span class="text-gray-500">{{ __('temporal-picker::temporal-picker.range.end') }}:</span>
-                        <span x-text="rangeEnd || '-'"></span>
-                    </div>
-                </div>
-                @endif
             </div>
         </div>
     </div>

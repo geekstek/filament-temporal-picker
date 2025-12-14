@@ -7,13 +7,14 @@ A Filament 4 plugin providing flexible temporal selection components including y
 
 ## Features
 
-- 🗓️ **5 Picker Types**: Year, Month, Week, Weekday, Day of Month
+- 🗓️ **6 Picker Types**: Year, Month, MonthRange, Week, Weekday, Day of Month
 - 🔄 **Multi-Select Support**: Select multiple values with min/max constraints
-- 📅 **Range Selection**: Select date ranges (start to end)
+- 📅 **Range Selection**: MonthRangePicker for selecting date ranges with separate start/end fields
 - 🚫 **Disabled Options**: Block specific options from selection
 - 🌐 **Localization**: Full i18n support (English & Chinese included)
 - 🎨 **Tailwind CSS 4**: Native dark mode support
 - ⚡ **Livewire & Alpine.js**: Reactive and performant
+- 💾 **Flexible Storage**: Single values, JSON arrays, or separate fields for ranges
 
 ## Requirements
 
@@ -79,16 +80,46 @@ YearPicker::make('fiscal_year')
 
 ### MonthPicker
 
+Select a single month or multiple months.
+
 ```php
 use Geekstek\TemporalPicker\Forms\Components\MonthPicker;
 
-MonthPicker::make('billing_period')
-    ->label('Billing Period')
+// Single month selection
+MonthPicker::make('billing_month')
+    ->label('Billing Month')
     ->minDate('2023-01')
     ->maxDate('2025-12')
     ->format('Y-m')
-    ->rangeSelection()  // Enable range selection
+    ->default('2024-01')
     ->locale('zh_CN');
+
+// Multiple months selection
+MonthPicker::make('available_months')
+    ->label('Available Months')
+    ->multiple()
+    ->minDate('2024-01')
+    ->maxDate('2024-12')
+    ->default(['2024-01', '2024-03', '2024-06'])
+    ->minSelections(1)
+    ->maxSelections(6);
+```
+
+### MonthRangePicker
+
+Select a range of months using two separate fields (start and end).
+
+```php
+use Geekstek\TemporalPicker\Forms\Components\MonthRangePicker;
+
+MonthRangePicker::make('campaign_period')
+    ->label('Campaign Period')
+    ->fields('campaign_start', 'campaign_end')  // Define field names
+    ->labels('Start Month', 'End Month')        // Custom labels (optional)
+    ->minDate('2024-01')
+    ->maxDate('2025-12')
+    ->format('Y-m')
+    ->required();
 ```
 
 ### WeekPicker
@@ -137,11 +168,46 @@ DayOfMonthPicker::make('payment_days')
 
 | Picker | Single Select | Multiple Select | Range Selection |
 |--------|---------------|-----------------|-----------------|
-| YearPicker | `2024` (int) | `[2023, 2024, 2025]` | - |
-| MonthPicker | `"2024-03"` (string) | `["2024-01", "2024-03"]` | `{"start": "2024-01", "end": "2024-06"}` |
-| WeekPicker | `"2024-W15"` (string) | `["2024-W10", "2024-W15"]` | - |
-| WeekdayPicker | `"monday"` or `1` | `["monday", "wednesday"]` or `[1, 3]` | - |
-| DayOfMonthPicker | `15` (int) | `[1, 15, 28]` | - |
+| YearPicker | `2024` (int) | `[2023, 2024, 2025]` (JSON array) | - |
+| MonthPicker | `"2024-03"` (string) | `["2024-01", "2024-03"]` (JSON array) | - |
+| MonthRangePicker | - | - | Two fields: `start="2024-01"`, `end="2024-06"` |
+| WeekPicker | `"2024-W15"` (string) | `["2024-W10", "2024-W15"]` (JSON array) | - |
+| WeekdayPicker | `"monday"` or `1` | `["monday", "wednesday"]` or `[1, 3]` (JSON array) | - |
+| DayOfMonthPicker | `15` (int) | `[1, 15, 28]` (JSON array) | - |
+
+### Database Schema Recommendations
+
+For fields using **multiple selection**, use a JSON column type:
+
+```php
+// Migration example
+Schema::create('schedules', function (Blueprint $table) {
+    $table->id();
+    
+    // Single selection - use string or date column
+    $table->string('billing_month', 7)->nullable();  // Format: Y-m
+    
+    // Multiple selection - use JSON column
+    $table->json('available_months')->nullable();
+    
+    // Range selection - use two separate columns
+    $table->string('campaign_start', 7)->nullable();
+    $table->string('campaign_end', 7)->nullable();
+    
+    $table->timestamps();
+});
+
+// Model cast example
+protected function casts(): array
+{
+    return [
+        'billing_month' => 'string',
+        'available_months' => 'array',  // Auto JSON encode/decode
+        'campaign_start' => 'string',
+        'campaign_end' => 'string',
+    ];
+}
+```
 
 ## Configuration
 
@@ -163,6 +229,79 @@ return [
         'date' => 'Y-m-d',
     ],
 ];
+```
+
+## Complete Usage Example
+
+Here's a complete example showing all pickers in a Filament Resource:
+
+```php
+use Filament\Forms;
+use Geekstek\TemporalPicker\Forms\Components\{
+    YearPicker,
+    MonthPicker,
+    MonthRangePicker,
+    WeekPicker,
+    WeekdayPicker,
+    DayOfMonthPicker
+};
+
+public static function form(Form $form): Form
+{
+    return $form->schema([
+        Forms\Components\Section::make('Temporal Fields')
+            ->schema([
+                // Single year
+                YearPicker::make('fiscal_year')
+                    ->label('Fiscal Year')
+                    ->default(now()->year),
+                
+                // Multiple years
+                YearPicker::make('target_years')
+                    ->label('Target Years')
+                    ->multiple()
+                    ->default([2024, 2025]),
+                
+                // Single month
+                MonthPicker::make('billing_month')
+                    ->label('Billing Month')
+                    ->default('2024-01'),
+                
+                // Multiple months
+                MonthPicker::make('available_months')
+                    ->label('Available Months')
+                    ->multiple()
+                    ->default(['2024-01', '2024-06', '2024-12']),
+                
+                // Month range (two separate fields)
+                MonthRangePicker::make('campaign_period')
+                    ->label('Campaign Period')
+                    ->fields('campaign_start', 'campaign_end')
+                    ->minDate('2024-01')
+                    ->maxDate('2025-12'),
+                
+                // Week picker
+                WeekPicker::make('report_week')
+                    ->label('Report Week')
+                    ->format('Y-\WW')
+                    ->weekStartsOnMonday(),
+                
+                // Weekday picker (for recurring schedules)
+                WeekdayPicker::make('working_days')
+                    ->label('Working Days')
+                    ->multiple()
+                    ->asString()
+                    ->default(['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
+                
+                // Day of month (for monthly recurring payments)
+                DayOfMonthPicker::make('payment_days')
+                    ->label('Payment Days')
+                    ->multiple()
+                    ->default([1, 15])
+                    ->disabledOptions([29, 30, 31]),
+            ]),
+    ]);
+}
 ```
 
 ## Localization
