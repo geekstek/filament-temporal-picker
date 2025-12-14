@@ -109,8 +109,8 @@ MonthPicker::make('available_months')
 To create a month range selector, use two `MonthPicker` fields with reactive validation:
 
 ```php
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Get;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get
 use Geekstek\TemporalPicker\Forms\Components\MonthPicker;
 
 Grid::make(2)

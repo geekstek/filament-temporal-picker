@@ -6,6 +6,5 @@
 /.vscode
 .DS_Store
 *.log
-/resources/dist
 .phpunit.result.cache
 .env
