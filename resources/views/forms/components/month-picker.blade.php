@@ -15,23 +15,25 @@ $maxDate = $getMaxDate();
     :component="$getFieldWrapperView()"
     :field="$field">
     <div
-        x-data="temporalPicker({
-            type: 'month',
-            statePath: @js($statePath),
-            multiple: @js($isMultiple),
-            rangeSelection: false,
-            disabled: @js($isDisabled),
-            readOnly: @js($isReadOnly),
-            disabledOptions: @js($disabledOptions),
-            options: @js($options),
-            minDate: @js($minDate),
-            maxDate: @js($maxDate),
-            yearRange: @js($yearRange),
-            format: @js($getFormat()),
-            displayFormat: @js($getDisplayFormat()),
-            locale: @js($getLocale()),
-        })"
-        x-init="initState($wire.$entangle('{{ $statePath }}'))"
+        x-data="{
+            ...temporalPicker({
+                type: 'month',
+                statePath: @js($statePath),
+                multiple: @js($isMultiple),
+                rangeSelection: false,
+                disabled: @js($isDisabled),
+                readOnly: @js($isReadOnly),
+                disabledOptions: @js($disabledOptions),
+                options: @js($options),
+                minDate: @js($minDate),
+                maxDate: @js($maxDate),
+                yearRange: @js($yearRange),
+                format: @js($getFormat()),
+                displayFormat: @js($getDisplayFormat()),
+                locale: @js($getLocale()),
+            }),
+            state: $wire.entangle('{{ $statePath }}'){{ $isLive() ? '.live' : '' }},
+        }"
         x-effect="updateConstraints(@js($minDate), @js($maxDate))"
         wire:key="month-picker-{{ $statePath }}"
         wire:ignore.self

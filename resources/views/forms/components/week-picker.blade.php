@@ -11,22 +11,23 @@ $state = $getState();
     :component="$getFieldWrapperView()"
     :field="$field">
     <div
-        x-data="temporalPicker({
-            type: 'week',
-            state: @js($state),
-            statePath: @js($statePath),
-            multiple: @js($isMultiple),
-            disabled: @js($isDisabled),
-            readOnly: @js($isReadOnly),
-            disabledOptions: @js($disabledOptions),
-            minYear: @js($getMinYear()),
-            maxYear: @js($getMaxYear()),
-            showWeekNumber: @js($shouldShowWeekNumber()),
-            firstDayOfWeek: @js($getFirstDayOfWeek()),
-            format: @js($getFormat()),
-            locale: @js($getLocale()),
-        })"
-        x-on:change="syncState()"
+        x-data="{
+            ...temporalPicker({
+                type: 'week',
+                statePath: @js($statePath),
+                multiple: @js($isMultiple),
+                disabled: @js($isDisabled),
+                readOnly: @js($isReadOnly),
+                disabledOptions: @js($disabledOptions),
+                minYear: @js($getMinYear()),
+                maxYear: @js($getMaxYear()),
+                showWeekNumber: @js($shouldShowWeekNumber()),
+                firstDayOfWeek: @js($getFirstDayOfWeek()),
+                format: @js($getFormat()),
+                locale: @js($getLocale()),
+            }),
+            state: $wire.entangle('{{ $statePath }}'){{ $isLive() ? '.live' : '' }},
+        }"
         wire:ignore
         {{ $attributes->merge($getExtraAttributes())->class([
             'fi-fo-temporal-picker fi-fo-week-picker',

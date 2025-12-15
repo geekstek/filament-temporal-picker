@@ -13,18 +13,19 @@ $columns = $getGridColumns();
     :component="$getFieldWrapperView()"
     :field="$field">
     <div
-        x-data="temporalPicker({
-            type: 'weekday',
-            state: @js($state),
-            statePath: @js($statePath),
-            multiple: @js($isMultiple),
-            disabled: @js($isDisabled),
-            readOnly: @js($isReadOnly),
-            disabledOptions: @js($disabledOptions),
-            options: @js($options),
-            valueFormat: @js($getValueFormat()),
-        })"
-        x-on:change="syncState()"
+        x-data="{
+            ...temporalPicker({
+                type: 'weekday',
+                statePath: @js($statePath),
+                multiple: @js($isMultiple),
+                disabled: @js($isDisabled),
+                readOnly: @js($isReadOnly),
+                disabledOptions: @js($disabledOptions),
+                options: @js($options),
+                valueFormat: @js($getValueFormat()),
+            }),
+            state: $wire.entangle('{{ $statePath }}'){{ $isLive() ? '.live' : '' }},
+        }"
         {{ $attributes->merge($getExtraAttributes())->class([
             'fi-fo-temporal-picker fi-fo-weekday-picker',
         ]) }}>

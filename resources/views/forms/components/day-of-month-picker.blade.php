@@ -14,19 +14,20 @@ $showCalendarGrid = $shouldShowCalendarGrid();
     :component="$getFieldWrapperView()"
     :field="$field">
     <div
-        x-data="temporalPicker({
-            type: 'dayOfMonth',
-            state: @js($state),
-            statePath: @js($statePath),
-            multiple: @js($isMultiple),
-            disabled: @js($isDisabled),
-            readOnly: @js($isReadOnly),
-            disabledOptions: @js($disabledOptions),
-            options: @js($options),
-            minDay: @js($getMinDay()),
-            maxDay: @js($getMaxDay()),
-        })"
-        x-on:change="syncState()"
+        x-data="{
+            ...temporalPicker({
+                type: 'dayOfMonth',
+                statePath: @js($statePath),
+                multiple: @js($isMultiple),
+                disabled: @js($isDisabled),
+                readOnly: @js($isReadOnly),
+                disabledOptions: @js($disabledOptions),
+                options: @js($options),
+                minDay: @js($getMinDay()),
+                maxDay: @js($getMaxDay()),
+            }),
+            state: $wire.entangle('{{ $statePath }}'){{ $isLive() ? '.live' : '' }},
+        }"
         {{ $attributes->merge($getExtraAttributes())->class([
             'fi-fo-temporal-picker fi-fo-day-of-month-picker',
         ]) }}>
